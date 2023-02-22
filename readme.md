@@ -8,7 +8,13 @@
 
 
 ## 最小示例
-- Tensor并行  `examples/tp.py`
+
+### Tensor并行
+<img src="imgs/normal.jpeg" width = "300"   align=center />
+
+- 1D并行  `examples/tp.py`
+
+<img src="imgs/1d.jpeg" width = "300"   align=center />
 
 
 

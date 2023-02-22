@@ -13,12 +13,13 @@ class MLP(torch.nn.Module):
     def __init__(self, dim: int = 256):
         super().__init__()
         intermediate_dim = dim * 4
-        self.dense_1 = col_nn.Linear(dim, intermediate_dim) # colossalai的分布式算子，以支持tensor并行
+        # colossalai的分布式算子，以支持tensor并行
+        self.dense_1 = col_nn.Linear(dim, intermediate_dim) 
         print_rank_0(
             f"Weight of the first linear layer: {self.dense_1.weight.transpose(0, 1).shape}"
         )
         self.activation = torch.nn.GELU()
-        self.dense_2 = col_nn.Linear(intermediate_dim, dim)
+        self.dense_2 = col_nn.Linear(intermediate_dim, dim) 
         print_rank_0(
             f"Weight of the second linear layer: {self.dense_2.weight.transpose(0, 1).shape}"
         )
