@@ -23,14 +23,22 @@
 
 <img src="assets/5241677052951_.pic.jpg" width = "700"   align=center />
 
+### Gemini异构内存空间管理器
+
+<img src="assets/5251677140103_.pic.jpg" width = "800"   align=center />
+
+
+
+
+
 ## 总结
 
 - GPU总数量= 数据并行大小 × 张量并行大小 × 流水并行大小，三者可同时应用
 - 指定 张量并行、流水并行的大小，则自动推断数据并行大小
-- Engine包含 模型、优化器、损失函数。
+- Engine： 对模型、优化器、损失函数的封装类。
 - fp16与ZeRO配置不兼容
 
-### 待学习
+### TODO
 
 - ColoTensor ：Pytorch Tensor子类，全局tensor，串行编写，分布训练
 
