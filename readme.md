@@ -23,13 +23,17 @@
 
 <img src="assets/5241677052951_.pic.jpg" width = "700"   align=center />
 
-### Gemini异构内存空间管理器
+### 异构内存空间管理器Gemini
 
 <img src="assets/5251677140103_.pic.jpg" width = "800"   align=center />
 
 
 
+### 自动并行AutoParallel(实验性)
 
+`examples/auto.py`
+
+<img src="assets/68B17411-E4E7-4A22-B8C6-F47F6045FF18.png" width = "400"   align=center />
 
 ## 总结
 
@@ -37,6 +41,7 @@
 - 指定 张量并行、流水并行的大小，则自动推断数据并行大小
 - Engine： 对模型、优化器、损失函数的封装类。
 - fp16与ZeRO配置不兼容
+- 大batch训练的优化器Lamb, Lars
 
 ### TODO
 

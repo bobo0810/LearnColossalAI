@@ -18,6 +18,8 @@ from torchvision.models.resnet import BasicBlock, Bottleneck, conv1x1
 
 """
 参考https://colossalai.org/zh-Hans/docs/features/pipeline_parallel
+
+第二个例子  https://github.com/hpcaitech/ColossalAI/blob/v0.2.5/examples/tutorial/hybrid_parallel/train.py
 """
 
 # ---------------------------参数配置-------------------------------------
@@ -76,7 +78,7 @@ root = "./data"  # 指定数据集保存路径
 train_dataloader, test_dataloader = build_cifar(
     BATCH_SIZE, root, padding=4, crop=32, resize=32
 )
-# colosalai内置的阶梯式学习率调度器（与流水并行是否有关？）
+# colosalai内置的阶梯式学习率调度器（与并行策略无关）
 lr_scheduler = col_nn.lr_scheduler.LinearWarmupLR(optimizer, NUM_EPOCHS, warmup_steps=1)
 engine, train_dataloader, test_dataloader, lr_scheduler = colossalai.initialize(
     model, optimizer, criterion, train_dataloader, test_dataloader, lr_scheduler
