@@ -23,6 +23,10 @@
 
 <img src="assets/5241677052951_.pic.jpg" width = "700"   align=center />
 
+### 混合并行
+
+  `examples/hybrid`
+
 ### 异构内存空间管理器Gemini
 
 <img src="assets/5251677140103_.pic.jpg" width = "800"   align=center />
