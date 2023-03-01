@@ -99,3 +99,6 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+# 启动命令
+# colossalai run --nproc_per_node 4 auto_parallel_with_resnet.py

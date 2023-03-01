@@ -35,7 +35,7 @@
 
 ### 自动并行AutoParallel(实验性)
 
-`examples/auto.py`
+`examples/auto`
 
 <img src="assets/68B17411-E4E7-4A22-B8C6-F47F6045FF18.png" width = "400"   align=center />
 
@@ -47,7 +47,26 @@
 - fp16与ZeRO配置不兼容
 - 大batch训练的优化器Lamb, Lars
 
+## 注意
+
+- 配置文件的batch 指单个GPU上的batch。 故总batch 是Nx batch
+- 配置文件的epoch 指单个GPU上的epoch。 故总epoch 是Nx epoch
+
+> 每个gpu上的dataloader都是完整的数据集，未做拆分。 故epoch=3  gpu=2时模型实际上过了6遍数据集
+
 ### TODO
 
 - ColoTensor ：Pytorch Tensor子类，全局tensor，串行编写，分布训练
+- ZeRO
 
+
+
+
+
+| 并行类型                      | 卡1显存占用 | 卡2显存占用 |
+| ----------------------------- | ----------- | ----------- |
+| 数据并行 size=2               | 2291M       | 2291M       |
+| 流水并行 size=2               | 8252M       | 1974M       |
+| Tensor并行 size=2   mode="1d" | 2047M       | 2087M       |
+
+注：两张卡  ResNet50  Batch=128

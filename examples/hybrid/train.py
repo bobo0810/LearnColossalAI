@@ -132,6 +132,7 @@ def main():
             progress = range(len(train_dataloader))
         for _ in progress:
             engine.zero_grad()
+            # 执行 前向、损失计算、反向。返回(output, label, loss)
             engine.execute_schedule(data_iter, return_output_label=False)
             engine.step()
             lr_scheduler.step()
