@@ -77,13 +77,17 @@ def main():
         pipelinable = PipelinableContext()
         with pipelinable:
             model = _create_vit_model(**model_kwargs)
+            # import timm
+            # model = timm.create_model("convnext_xlarge_384_in22ft1k", pretrained=False)
         pipelinable.to_layer_list() # 根据切分顺序,得到模型序列
-        pipelinable.policy = "uniform"
+        # pipelinable.policy = "uniform"
         # 将模型切分成流水线阶段   NUM_CHUNKS=1指交错式流水并行
         model = pipelinable.partition(1, gpc.pipeline_parallel_size, gpc.get_local_rank(ParallelMode.PIPELINE))
     else:
         # 配置文件不支持流水并行，但内置库 支持Tensor并行、数据并行
         model = _create_vit_model(**model_kwargs)
+        # import timm
+        # model = timm.create_model("convnext_xlarge_384_in22ft1k", pretrained=False)
 
     # count number of parameters 统计参数
     total_numel = 0
