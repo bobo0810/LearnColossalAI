@@ -41,11 +41,28 @@
 
 ## 总结
 
-- GPU总数量= 数据并行大小 × 张量并行大小 × 流水并行大小，三者可混合应用
+- GPU总数量= 数据并行大小 × 张量并行大小 × 流水并行大小
 - 指定 张量并行、流水并行的大小，则自动推断数据并行大小
 - Engine： 对模型、优化器、损失函数的封装类。
 - fp16与ZeRO配置不兼容
-- 大batch训练的优化器Lamb, Lars
+- Timm库的ViT类模型实现流水并行  参考`examples/images/vit/train.py`
+
+
+
+## 并行技术
+
+- 混合并行：数据并行 + 流水并行 + Tensor并行
+- 优化器
+  - 零冗余优化器ZeRO
+  - 优化器Lamb, Lars：专注大batch训练
+  - NVMe offload：将优化器状态 offload 到磁盘以节省显存，兼容所有并行方法
+- 高效异构内存管理子系统Gemini
+
+- 自动激活检查点
+- 自动并行Auto-Parallelism（实验性）
+- ColoTensor（实验性） ：Pytorch Tensor子类，全局tensor，串行编写，分布训练
+
+
 
 ## 注意
 
@@ -53,13 +70,6 @@
 - 配置文件的epoch 指单个GPU上的epoch。 故总epoch 是Nx epoch
 
 > 每个gpu上的dataloader都是完整的数据集，未做拆分。 故epoch=3  gpu=2时模型实际上过了6遍数据集
-
-### TODO
-
-- ColoTensor ：Pytorch Tensor子类，全局tensor，串行编写，分布训练
-- ZeRO
-
-
 
 ## 实验
 
