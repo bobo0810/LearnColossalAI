@@ -89,7 +89,8 @@ def main():
         # import timm
         # model = timm.create_model("convnext_xlarge_384_in22ft1k", pretrained=False)
 
-    # count number of parameters 统计参数
+    # count number of parameters
+    # 统计不同流水线阶段上的模型参数个数
     total_numel = 0
     for p in model.parameters():
         total_numel += p.numel()
