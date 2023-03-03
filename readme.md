@@ -27,7 +27,13 @@
 
   `examples/hybrid`
 
+### 零冗余优化器ZeRO
+
+  `examples/zero`
+
 ### 异构内存空间管理器Gemini
+
+  `examples/zero`
 
 <img src="assets/5251677140103_.pic.jpg" width = "800"   align=center />
 
