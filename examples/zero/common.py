@@ -7,45 +7,65 @@ from colossalai.utils import checkpoint
 from colossalai.zero.shard_utils import TensorShardStrategy
 from colossalai.zero.sharded_model import ShardedModelV2
 
-LOGGER = get_dist_logger('zero_test')
+LOGGER = get_dist_logger("zero_test")
 
-# MP_PARALLEL_CONFIG = dict(fp16=dict(mode=None,), parallel=dict(pipeline=dict(size=1), tensor=dict(size=2, mode=None)))
+MP_PARALLEL_CONFIG = dict(
+    fp16=dict(
+        mode=None,
+    ),
+    parallel=dict(pipeline=dict(size=1), tensor=dict(size=2, mode=None)),
+)
 
-#模型配置
-_ZERO_MODEL_CONFIG = dict(reduce_scatter_bucket_size_mb=25,
-                          fp32_reduce_scatter=False,
-                          tensor_placement_policy='cuda', # "auto" 开启异构内存空间管理器Gemini  https://colossalai.org/zh-Hans/docs/advanced_tutorials/meet_gemini
-                          gradient_predivide_factor=1.0,
-                          shard_strategy=TensorShardStrategy(),
-                          reuse_fp16_shard=False)
-#优化器配置
-_ZERO_OPTIMIZER_CONFIG = dict(initial_scale=2**5,
-                              min_scale=1,
-                              growth_factor=2,
-                              backoff_factor=0.5,
-                              growth_interval=1000,
-                              hysteresis=2,
-                              max_scale=2**32)
-# 总配置
-ZERO_PARALLEL_CONFIG = dict(fp16=dict(mode=None,), # 关闭混合精度
-                            # ZeRO零冗余优化器 配置
-                            zero=dict(
-                                model_config=_ZERO_MODEL_CONFIG,
-                                optimizer_config=_ZERO_OPTIMIZER_CONFIG,
-                            ),
-                            # 关闭 流水并行、Tensor并行
-                            parallel=dict(pipeline=dict(size=1), tensor=dict(size=1, mode=None)))
+_ZERO_MODEL_CONFIG = dict(
+    reduce_scatter_bucket_size_mb=25,
+    fp32_reduce_scatter=False,
+    tensor_placement_policy="cuda",
+    gradient_predivide_factor=1.0,
+    shard_strategy=TensorShardStrategy(),
+    reuse_fp16_shard=False,
+)
 
-# CONFIG = dict(fp16=dict(mode=None,),
-#               zero=dict(level=3,
-#                         verbose=False,
-#                         offload_optimizer_config=dict(device='cpu', pin_memory=True, buffer_count=5, fast_init=False),
-#                         offload_param_config=dict(device='cpu',
-#                                                   pin_memory=True,
-#                                                   buffer_count=5,
-#                                                   buffer_size=1e8,
-#                                                   max_in_cpu=1e9)),
-#               parallel=dict(pipeline=dict(size=1), tensor=dict(size=1, mode=None)))
+_ZERO_OPTIMIZER_CONFIG = dict(
+    initial_scale=2**5,
+    min_scale=1,
+    growth_factor=2,
+    backoff_factor=0.5,
+    growth_interval=1000,
+    hysteresis=2,
+    max_scale=2**32,
+)
+
+ZERO_PARALLEL_CONFIG = dict(
+    fp16=dict(
+        mode=None,
+    ),
+    zero=dict(
+        model_config=_ZERO_MODEL_CONFIG,
+        optimizer_config=_ZERO_OPTIMIZER_CONFIG,
+    ),
+    parallel=dict(pipeline=dict(size=1), tensor=dict(size=1, mode=None)),
+)
+
+# CONFIG = dict(
+#     fp16=dict(
+#         mode=None,
+#     ),
+#     zero=dict(
+#         level=3,
+#         verbose=False,
+#         offload_optimizer_config=dict(
+#             device="cpu", pin_memory=True, buffer_count=5, fast_init=False
+#         ),
+#         offload_param_config=dict(
+#             device="cpu",
+#             pin_memory=True,
+#             buffer_count=5,
+#             buffer_size=1e8,
+#             max_in_cpu=1e9,
+#         ),
+#     ),
+#     parallel=dict(pipeline=dict(size=1), tensor=dict(size=1, mode=None)),
+# )
 
 
 def run_fwd_bwd(model, data, label, criterion, enable_autocast=False):
@@ -87,12 +107,16 @@ def check_params(model, zero_model, loose=False):
     for p, zero_p in zip(model.parameters(), zero_model.parameters()):
         zero_p = zero_p.clone().to(p.device)
         # assert p.dtype == zero_p.dtype
-        assert allclose(p.float(), zero_p.float(), loose=loose), f"diff {p.float() - zero_p.float()}"
+        assert allclose(
+            p.float(), zero_p.float(), loose=loose
+        ), f"diff {p.float() - zero_p.float()}"
 
 
 def check_grads_padding(model, zero_model, loose=False):
     rank = dist.get_rank()
-    for (name, p), (zero_name, zero_p) in zip(model.named_parameters(), zero_model.named_parameters()):
+    for (name, p), (zero_name, zero_p) in zip(
+        model.named_parameters(), zero_model.named_parameters()
+    ):
         # zero_grad = zero_p.grad.clone().to(p.device)
         if zero_p.colo_attr.is_replicated:
             zero_grad = zero_p.colo_attr.grad_payload.clone().to(p.device)
@@ -101,13 +125,13 @@ def check_grads_padding(model, zero_model, loose=False):
                 continue
             grad = chunks[rank].float()
             if zero_grad.size(0) > grad.size(0):
-                zero_grad = zero_grad[:grad.size(0)]
+                zero_grad = zero_grad[: grad.size(0)]
         else:
             zero_grad = zero_p.colo_attr.grad_payload
             grad = p.grad.to(zero_grad.dtype)
 
         assert grad.dtype == zero_grad.dtype
-        assert allclose(grad, zero_grad, loose=loose), f'diff: {grad - zero_grad}'
+        assert allclose(grad, zero_grad, loose=loose), f"diff: {grad - zero_grad}"
 
 
 def check_params_padding(model, zero_model, loose=False):
@@ -119,14 +143,16 @@ def check_params_padding(model, zero_model, loose=False):
             continue
         p = chunks[rank]
         if zero_p.size(0) > p.size(0):
-            zero_p = zero_p[:p.size(0)]
+            zero_p = zero_p[: p.size(0)]
         assert p.dtype == zero_p.dtype
         assert allclose(p, zero_p, loose=loose)
 
 
 def check_sharded_model_params(model, zero_model, loose=False, reuse_fp16_shard=False):
     rank = dist.get_rank()
-    for (name, p), (zero_name, zero_p) in zip(model.named_parameters(), zero_model.named_parameters()):
+    for (name, p), (zero_name, zero_p) in zip(
+        model.named_parameters(), zero_model.named_parameters()
+    ):
         if zero_p.colo_attr.param_is_sharded:
             zero_p = zero_p.colo_attr.data_payload.to(p.device).float()
             chunks = torch.flatten(p).chunk(dist.get_world_size())
@@ -134,9 +160,11 @@ def check_sharded_model_params(model, zero_model, loose=False, reuse_fp16_shard=
                 continue
             p = chunks[rank].float()
             if zero_p.size(0) > p.size(0):
-                zero_p = zero_p[:p.size(0)]
+                zero_p = zero_p[: p.size(0)]
         else:
             zero_p = zero_p.colo_attr.data_payload.to(p.device)
 
-        assert p.dtype == zero_p.dtype, "Parameter `{}`:\n{} vs {}".format(name, p.dtype, zero_p.dtype)
-        assert allclose(p, zero_p, loose=loose), f'{p} vs {zero_p}'
+        assert p.dtype == zero_p.dtype, "Parameter `{}`:\n{} vs {}".format(
+            name, p.dtype, zero_p.dtype
+        )
+        assert allclose(p, zero_p, loose=loose), f"{p} vs {zero_p}"
