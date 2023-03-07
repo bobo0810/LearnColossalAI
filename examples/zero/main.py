@@ -22,7 +22,7 @@ from common import (
     check_params,
     check_sharded_model_params,
 )
-
+from timm.utils import ModelEmaV2  # 加载timm模型时，需导入该包
 """
 参考 https://github.com/hpcaitech/ColossalAI/blob/v0.2.5/tests/test_zero/test_zero_engine.py
 """
@@ -64,7 +64,7 @@ def run_dist():
     epoch = 3
     for i_epoch in range(epoch):
         print("epoch:{}/{}...".format(i_epoch, epoch))
-        for data, label in train_dataloader:
+        for batch_idx, (data, label) in enumerate(tqdm(train_dataloader)):
 
             data, label = data.cuda(), label.cuda()
 

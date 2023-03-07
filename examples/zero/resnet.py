@@ -33,9 +33,8 @@ def get_resnet_training_components():
         # from torchvision.models import resnet18
         # return resnet18(num_classes=10)
 
-        from torchvision.models import resnet152
-
-        return resnet152(num_classes=10)
+        import timm
+        return timm.create_model("resnet18", num_classes=10)
 
     trainloader = get_cifar10_dataloader(train=True)
     testloader = get_cifar10_dataloader(train=False)
