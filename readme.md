@@ -9,7 +9,7 @@
 
 
 
-<img src="assets/训练方案.svg" width = "900"   align=center />
+<img src="assets/训练方案-8869037.svg" width = "1200"   align=center />
 
 
 
@@ -36,7 +36,7 @@
 | 流水并行   | 16        | size=2             | 4080M  | 1996M  |
 | Tensor并行 | 16        | size=2   mode="1d" | 4650M  | 4650M  |
 
-注：Backbone=convnext_base_384_in22ft1k Size=384   GPU=2  AMP=true
+注：Backbone=convnext_base_384_in22ft1k   GPU=2  AMP=true
 
 
 
@@ -80,6 +80,6 @@
 
 ### 自动并行AutoParallel(实验性)
 
-`examples/auto`
+api暂未稳定
 
 <img src="assets/68B17411-E4E7-4A22-B8C6-F47F6045FF18.png" width = "400"   align=center />

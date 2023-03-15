@@ -44,7 +44,7 @@ def main():
     # launch from torch
     parser = colossalai.get_default_parser()
     args = parser.parse_args()
-    colossalai.launch_from_torch(config=args.config) # 加载condif.py配置文件
+    colossalai.launch_from_torch(config=args.config) # 加载config.py配置文件
 
     # get logger
     logger = get_dist_logger()
@@ -82,12 +82,11 @@ def main():
         with pipelinable:
             model = _create_vit_model(**model_kwargs)
             # import timm
-            # model = timm.create_model("convnext_xlarge_384_in22ft1k", pretrained=False)
+            # model = timm.create_model("convnext_xlarge_384_in22ft1k", pretrained=True, num_classes=10)
         pipelinable.to_layer_list() # colossalai默认将"模型初始化顺序"作为"切分顺序"
 
         # 通过分区策略构建分区模型 支持"balanced(默认)"、"uniform"
         # pipelinable.policy = "uniform"
-
 
 
         # 将模型切分成流水线阶段   num_chunks=1指交错式流水并行
@@ -95,7 +94,7 @@ def main():
     else:
         model = _create_vit_model(**model_kwargs)
         # import timm
-        # model = timm.create_model("convnext_xlarge_384_in22ft1k", pretrained=False)
+        # model = timm.create_model("convnext_xlarge_384_in22ft1k", pretrained=True, num_classes=10)
 
     # count number of parameters
     # 统计不同流水线阶段上的模型参数个数
@@ -145,9 +144,24 @@ def main():
         else:
             progress = range(len(train_dataloader))
         for _ in progress:
+            # 查看输入数据
+            # data, label = next(data_iter)
+            # print("data, label--->", data.shape, label.shape)
             engine.zero_grad()
-            # 执行 前向、损失计算、反向。返回(output, label, loss)
-            engine.execute_schedule(data_iter, return_output_label=False)
+
+            # ---------------------------------------------------------------
+            if True:
+                # 方式1：支持数据并行+Tensor并行+流水并行
+                # 执行 前向、损失计算、反向。 返回(output, label, loss)
+                engine.execute_schedule(data_iter, return_output_label=False)
+            else:
+                # 方案2：数据并行+Tensor并行，不支持流水并行
+                imgs, labels = next(data_iter)
+                imgs, labels = imgs.cuda(), labels.cuda()
+                output = engine(imgs)
+                loss = engine.criterion(output, labels)
+                engine.backward(loss)
+            # ---------------------------------------------------------------
             engine.step()
             lr_scheduler.step()
     gpc.destroy()
