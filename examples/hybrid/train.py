@@ -1,7 +1,7 @@
 import os
 
 import torch
-from titans.model.vit.vit import _create_vit_model # colossalai内置模型库，已支持分布式
+from titans.model.vit.vit import _create_vit_model # titans为colossalai内置模型库，已支持分布式
 from tqdm import tqdm
 
 import colossalai
@@ -12,7 +12,7 @@ from colossalai.nn import CrossEntropyLoss
 from colossalai.nn.lr_scheduler import CosineAnnealingWarmupLR
 from colossalai.pipeline.pipelinable import PipelinableContext
 from colossalai.utils import is_using_pp
-
+from timm.utils import ModelEmaV2  # timm模型时需导入该包
 
 class DummyDataloader():
     """合成假数据"""
@@ -44,12 +44,13 @@ def main():
     # launch from torch
     parser = colossalai.get_default_parser()
     args = parser.parse_args()
-    colossalai.launch_from_torch(config=args.config)
+    colossalai.launch_from_torch(config=args.config) # 加载condif.py配置文件
 
     # get logger
     logger = get_dist_logger()
     logger.info("initialized distributed environment", ranks=[0])
 
+    # 创建log文件
     if hasattr(gpc.config, 'LOG_PATH'):
         if gpc.get_global_rank() == 0:
             log_path = gpc.config.LOG_PATH
@@ -70,21 +71,28 @@ def main():
                         num_classes=10,
                         init_method='jax',
                         checkpoint=gpc.config.CHECKPOINT)
+    # 已统一支持Tensor并行、数据并行
 
+
+
+    # 开启流水并行
     if use_pipeline:
-        # 流水并行 + Tensor并行 + 数据并行
         # 流水线上下文管理器，将模型切分成流水阶段
         pipelinable = PipelinableContext()
         with pipelinable:
             model = _create_vit_model(**model_kwargs)
             # import timm
             # model = timm.create_model("convnext_xlarge_384_in22ft1k", pretrained=False)
-        pipelinable.to_layer_list() # 根据切分顺序,得到模型序列
+        pipelinable.to_layer_list() # colossalai默认将"模型初始化顺序"作为"切分顺序"
+
+        # 通过分区策略构建分区模型 支持"balanced(默认)"、"uniform"
         # pipelinable.policy = "uniform"
-        # 将模型切分成流水线阶段   NUM_CHUNKS=1指交错式流水并行
+
+
+
+        # 将模型切分成流水线阶段   num_chunks=1指交错式流水并行
         model = pipelinable.partition(1, gpc.pipeline_parallel_size, gpc.get_local_rank(ParallelMode.PIPELINE))
     else:
-        # 配置文件不支持流水并行，但内置库 支持Tensor并行、数据并行
         model = _create_vit_model(**model_kwargs)
         # import timm
         # model = timm.create_model("convnext_xlarge_384_in22ft1k", pretrained=False)
@@ -100,8 +108,9 @@ def main():
         pipeline_stage = gpc.get_local_rank(ParallelMode.PIPELINE)
     logger.info(f"number of parameters: {total_numel} on pipeline stage {pipeline_stage}")
 
-    # use synthetic dataset
+    # use synthetic dataset 使用伪造数据集
     # we train for 10 steps and eval for 5 steps per epoch
+    # 训练集10次迭代   验证集5次迭代
     train_dataloader = DummyDataloader(length=10, batch_size=gpc.config.BATCH_SIZE)
     test_dataloader = DummyDataloader(length=5, batch_size=gpc.config.BATCH_SIZE)
 
@@ -147,5 +156,5 @@ def main():
 if __name__ == '__main__':
     main()
 
-# 启动命令
+# 启动命令  4卡=流水并行2 * Tensor并行2
 # colossalai run --nproc_per_node 4 train.py --config config.py

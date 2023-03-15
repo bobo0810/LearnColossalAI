@@ -25,12 +25,14 @@ TENSOR_PARALLEL_SIZE = 2
 TENSOR_PARALLEL_MODE = '1d'
 
 parallel = dict(
-    pipeline=2,
-    tensor=dict(mode=TENSOR_PARALLEL_MODE, size=TENSOR_PARALLEL_SIZE),
+    pipeline=2, # 流水并行 阶段为2
+    tensor=dict(mode=TENSOR_PARALLEL_MODE, size=TENSOR_PARALLEL_SIZE), # Tensor并行 1d并行 size=2
 )
 
-fp16 = dict(mode=AMP_TYPE.NAIVE)
-clip_grad_norm = 1.0
+fp16 = dict(mode=AMP_TYPE.NAIVE) # colossalai内置版本，同时支持 张量、流水并行
+clip_grad_norm = 1.0  # 梯度裁剪范数   作用：将梯度向量归一化，加快训练 提升性能
 
-# pipeline config
+# pipeline config 流水并行的配置
+# 启用交错式Schedule  总batch被划分为N个micro_batches,micro_batches数量为流水线阶段的整数倍
+# eg: 总batch=4  划分为2个micro_batches。
 NUM_MICRO_BATCHES = parallel['pipeline']

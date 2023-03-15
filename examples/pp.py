@@ -52,7 +52,7 @@ exec_seq = [
     "layer3",
     "layer4",
     "avgpool",
-    (lambda x: torch.flatten(x, 1), "behind"),  # 拉伸操作 需手动添加
+    (lambda x: torch.flatten(x, 1), "behind"),  # 拉伸操作 手动添加
     "fc",
 ]
 pipelinable.to_layer_list(exec_seq)
