@@ -64,7 +64,9 @@
 
 ### 混合并行
 
-  `examples/hybrid`
+- 数据并行+流水并行+Tensor并行   `examples/hybrid`
+
+- 问题：显存负载严重不均衡     解决：[流水并行-自定义拆分教程](examples/hybrid/流水并行-自定义拆分.md)
 
 ### 零冗余优化器ZeRO
 
