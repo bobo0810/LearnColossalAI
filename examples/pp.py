@@ -78,7 +78,6 @@ root = "./data"  # 指定数据集保存路径
 train_dataloader, test_dataloader = build_cifar(
     BATCH_SIZE, root, padding=4, crop=32, resize=32
 )
-# colosalai内置的阶梯式学习率调度器（与并行策略无关）
 lr_scheduler = col_nn.lr_scheduler.LinearWarmupLR(optimizer, NUM_EPOCHS, warmup_steps=1)
 engine, train_dataloader, test_dataloader, lr_scheduler = colossalai.initialize(
     model, optimizer, criterion, train_dataloader, test_dataloader, lr_scheduler
