@@ -1,4 +1,4 @@
-# 一起来训大模型
+# 大模型食用手册
 
 - 该仓库收录于[PytorchNetHub](https://github.com/bobo0810/PytorchNetHub)
 - [ColossalAI官网](https://www.colossalai.org/zh-Hans/)   [文档](https://www.colossalai.org/zh-Hans/docs/get_started/installation/)
