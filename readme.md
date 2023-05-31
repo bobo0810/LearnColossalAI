@@ -47,7 +47,7 @@
 
 - 数据并行+流水并行+Tensor并行   `examples/hybrid`
 
-<img src="assets/未命名文件-导出.png" alt="未命名文件-导出" style="zoom:25%;" />
+<img src="assets/未命名文件-导出-5527966.png" alt="未命名文件-导出" style="zoom:25%;" />
 
 - 解决问题1：[自定义拆分教程](examples/hybrid/流水并行-自定义拆分.md)
 
