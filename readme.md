@@ -41,7 +41,21 @@
 
 
 
-# 最小示例
+
+
+### 混合并行示例
+
+- 数据并行+流水并行+Tensor并行   `examples/hybrid`
+
+<img src="assets/未命名文件-导出.png" alt="未命名文件-导出" style="zoom:25%;" />
+
+- 解决问题1：[自定义拆分教程](examples/hybrid/流水并行-自定义拆分.md)
+
+- 解决问题2：  [模型库](examples/hybrid/流水并行-模型库.md)
+
+
+
+# 其他示例
 
 
 
@@ -62,18 +76,6 @@
   `examples/pp.py`
 
 <img src="assets/5241677052951_.pic.jpg" width = "700"   align=center />
-
-### 混合并行
-
-- 数据并行+流水并行+Tensor并行   `examples/hybrid`
-
-- 问题1：显存负载严重不均衡     
-
-  解决：[流水并行-自定义拆分教程](examples/hybrid/流水并行-自定义拆分.md)
-
-- 问题2：流水并行，大多数模型运行报错
-
-  解决：丢失了部分前向操作，需显式添加到执行序列中  [模型库](examples/hybrid/流水并行-模型库.md)
 
 ### 零冗余优化器ZeRO
 
