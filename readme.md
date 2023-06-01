@@ -49,9 +49,10 @@
 
 <img src="assets/未命名文件-导出-5527966.png" alt="未命名文件-导出" style="zoom:25%;" />
 
-- 解决问题1：[自定义拆分教程](examples/hybrid/流水并行-自定义拆分.md)
-
+- 解决问题1：[自定义拆分教程](examples/hybrid/流水并行-自定义拆分.md)    
 - 解决问题2：  [模型库](examples/hybrid/流水并行-模型库.md)
+
+> 官方API教程没有，属于colossalai隐藏API的探索使用
 
 
 
