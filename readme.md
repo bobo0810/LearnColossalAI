@@ -25,20 +25,21 @@
 
 ## 注意
 
-- 配置文件的batch 指单个GPU上的batch。 故总batch 是Nx batch
+- 配置文件的batch 指单个进程的batch。 故总batch 是Nx batch
 - 配置文件的epoch 指单个GPU上的epoch。 故总epoch 是Nx epoch
 
-> 举例：每个gpu上的dataloader都是完整的数据集，未做拆分。 epoch=3  gpu=2时模型实际上过了6遍数据集
+> 举例：每个gpu上的dataloader都是完整的数据集，未做拆分。 epoch=3  数据并行=2时模型实际上过了6遍数据集
 
 ## 实验
 
-| 并行类型 | 等效batch   | 卡1显存占用 | 卡2显存占用 |
-| -------- | ----------- | ----------- | ----------- |
-| 数据并行 | 18*2=36     | 10986M      | 10986M      |
-| 流水并行 | 66 （83%↑） | 10836M      | 10460M      |
+| 模型名称           | 参数量 | 输入尺寸 | batch（数据并行->流水并行） | 提升  |
+| ------------------ | ------ | -------- | --------------------------- | ----- |
+| swinv2_large       | 196M   | 256×256  | 90->120                     | 33%↑  |
+| convnext_xlarge    | 350M   | 224×224  | 140->200                    | 43%↑  |
+| tf_efficientnet_l2 | 480M   | 800×800  | 1->4                        | 300%↑ |
+| eva_giant          | 1013M  | 336×336  | 6->？                       |       |
 
-注：Backbone=convnext_xlarge_in22ft1k    GPU=2   AMP=true
-
+ [更多详情](examples/hybrid/流水并行-模型库.md)
 
 
 
@@ -52,7 +53,7 @@
 - 解决问题1：[自定义拆分教程](examples/hybrid/流水并行-自定义拆分.md)    
 - 解决问题2：  [模型库](examples/hybrid/流水并行-模型库.md)
 
-> 官方API教程没有，属于colossalai隐藏API的探索使用
+- 注：colossalai的官方API无此内容，属于隐藏的高级API。**"补足算子"**、**"自定义多级拆分"**特性是基于读源码总结得出。
 
 
 
